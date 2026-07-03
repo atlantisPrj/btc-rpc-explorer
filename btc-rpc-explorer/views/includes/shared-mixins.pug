@@ -324,7 +324,7 @@ mixin txList(visibleTxs, txCount, limit, offset, inputsByTxid, options={})
 			.d-none.d-lg-block.border-end.mt-n4.mb-2(style="border-color: currentColor !important; height: 10px; width: 50%; opacity: 0.25;")
 
 			div
-				+txIoDetails(tx, txInputs, totalIOValues, blockHeight, {highlightAddress:options.highlightAddress, maxTxOutputDisplayCount:maxTxOutputDisplayCount, compactCoinbaseData:options.compactCoinbaseData})
+				+txIoDetails(tx, txInputs, totalIOValues, blockHeight, {highlightAddress:options.highlightAddress, maxTxOutputDisplayCount:maxTxOutputDisplayCount, compactScriptData:options.compactScriptData})
 
 		if (txIndex < (visibleTxs.length - 1) || txCount > limit)
 			.pb-4.pb-md-2.bg-tx-separator

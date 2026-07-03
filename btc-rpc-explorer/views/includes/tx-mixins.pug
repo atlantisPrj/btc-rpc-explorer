@@ -44,6 +44,22 @@ mixin outputValueDisplay(tx, vout, voutIndex, nonZeroVoutValueCount)
 						i.bi-x-circle.text-danger.ms-2
 
 
+mixin compactScriptDataDisplay(hex, label="Script data")
+	- var scriptText = "";
+	- var scriptHex = hex || "";
+	- for (var scriptHexIndex = 0; scriptHexIndex < scriptHex.length; scriptHexIndex += 2) {
+		- var charCode = parseInt(scriptHex.substring(scriptHexIndex, scriptHexIndex + 2), 16);
+		- scriptText += (charCode >= 32 && charCode <= 126) ? String.fromCharCode(charCode) : " ";
+	- }
+	- var scriptMessage = scriptText.split(/\s+/).filter(x => x.length >= 2).join(" ").trim();
+	.mt-2.small.word-wrap
+		span.text-muted.me-1 #{label}:
+		if (scriptMessage)
+			span.font-monospace #{scriptMessage}
+		else
+			span.text-muted #{Math.floor(scriptHex.length / 2).toLocaleString()} bytes binary data
+
+
 
 mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 	if (options.highlightAddress)
@@ -95,18 +111,8 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 								+successBadge
 									span(title="Coinbase transactions are special transactions created by the miner of a block. They distribute the block reward (subsidy) as the miner chooses, along with all of the fees paid by transactions included in the block.", data-bs-toggle="tooltip") coinbase
 								
-								if (options.compactCoinbaseData)
-									- var coinbaseText = "";
-									- var coinbaseHex = txVin.coinbase || "";
-									- for (var coinbaseHexIndex = 0; coinbaseHexIndex < coinbaseHex.length; coinbaseHexIndex += 2) {
-										- var charCode = parseInt(coinbaseHex.substring(coinbaseHexIndex, coinbaseHexIndex + 2), 16);
-										- coinbaseText += (charCode >= 32 && charCode <= 126) ? String.fromCharCode(charCode) : " ";
-									- }
-									- var coinbaseMessage = coinbaseText.split(/\s+/).filter(x => x.length >= 2).join(" ").trim();
-									if (coinbaseMessage)
-										.mt-2.small.word-wrap
-											span.text-muted.me-1 Coinbase message:
-											span.font-monospace #{coinbaseMessage}
+								if (options.compactScriptData)
+									+compactScriptDataDisplay(txVin.coinbase, "Coinbase message")
 								else
 									.mt-2
 										+hexDataDisplay(txVin.coinbase)
@@ -269,15 +275,21 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 											span.small SegWit
 											i.bi-box-arrow-up-right.ms-1
 
-								.my-2
-									+hexDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length))
+								if (options.compactScriptData)
+									+compactScriptDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length), "OP_RETURN data")
+								else
+									.my-2
+										+hexDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length))
 
 							else if (vout.scriptPubKey.asm && vout.scriptPubKey.asm.startsWith('OP_RETURN '))
 								span
 									+primaryBadge("OP_RETURN")
 
-								.my-2
-									+hexDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length))
+								if (options.compactScriptData)
+									+compactScriptDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length), "OP_RETURN data")
+								else
+									.my-2
+										+hexDataDisplay(vout.scriptPubKey.asm.substring("OP_RETURN ".length))
 							
 							else if (vout.scriptPubKey.type)
 								span.d-none.d-sm-inline
@@ -309,8 +321,11 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 
 						if (vout && vout.scriptPubKey.asm && !vout.scriptPubKey.asm.startsWith("OP_RETURN "))
 							if (voutAddresses.length == 0)
-								.my-2
-									+hexDataDisplay(vout.scriptPubKey.hex)
+								if (options.compactScriptData)
+									+compactScriptDataDisplay(vout.scriptPubKey.hex, "Script data")
+								else
+									.my-2
+										+hexDataDisplay(vout.scriptPubKey.hex)
 
 
 						if (voutAddresses.length > 0)
@@ -370,5 +385,4 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 							span.fw-bold
 								i.d-inline.d-lg-none.bi-arrow-right.text-success.me-2
 								+valueDisplay(totalIOValues.output)
-
 

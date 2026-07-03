@@ -117,7 +117,7 @@ block content
 									a.page-link(href=(txNextOffset >= txHistoryTxCount ? "javascript:void(0)" : `./?txLimit=${txHistoryLimit}&txOffset=${txNextOffset}`), aria-label="Next")
 										i.bi-chevron-right(aria-hidden="true")
 
-					+txList(txHistoryTransactions, txHistoryTxCount, txHistoryLimit, txHistoryOffset, txHistoryTxInputsByTransaction, {blockHeightsByTxid:txHistoryBlockHeightsByTxid, hidePagination:true, compactCoinbaseData:true})
+					+txList(txHistoryTransactions, txHistoryTxCount, txHistoryLimit, txHistoryOffset, txHistoryTxInputsByTransaction, {blockHeightsByTxid:txHistoryBlockHeightsByTxid, hidePagination:true, compactScriptData:true})
 
 					if (txHistoryTxCount > txHistoryLimit)
 						- var txPrevOffset = Math.max(txHistoryOffset - txHistoryLimit, 0);

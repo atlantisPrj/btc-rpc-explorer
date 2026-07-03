@@ -95,6 +95,44 @@ block content
 
 				include includes/blocks-list.pug
 							
+		if (txHistoryTransactions)
+			.mt-4
+				+sectionTitle("Transaction History")
+
+			+contentSection
+				if (txHistoryError)
+					div.alert.alert-warning.mb-0
+						span Transaction history is unavailable for the latest blocks.
+				else if (txHistoryTransactions.length > 0)
+					if (txHistoryTxCount > txHistoryLimit)
+						- var txPrevOffset = Math.max(txHistoryOffset - txHistoryLimit, 0);
+						- var txNextOffset = txHistoryOffset + txHistoryLimit;
+						.d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
+							h6.fw-normal.mb-0 #{txHistoryOffset.toLocaleString()} - #{Math.min(txHistoryOffset + txHistoryLimit - 1, txHistoryTxCount - 1).toLocaleString()} of #{txHistoryTxCount.toLocaleString()}
+							ul.pagination.mb-0
+								li.page-item(class=(txHistoryOffset == 0 ? "disabled" : false))
+									a.page-link(href=(txHistoryOffset == 0 ? "javascript:void(0)" : `./?txLimit=${txHistoryLimit}&txOffset=${txPrevOffset}`), aria-label="Previous")
+										i.bi-chevron-left(aria-hidden="true")
+								li.page-item(class=(txNextOffset >= txHistoryTxCount ? "disabled" : false))
+									a.page-link(href=(txNextOffset >= txHistoryTxCount ? "javascript:void(0)" : `./?txLimit=${txHistoryLimit}&txOffset=${txNextOffset}`), aria-label="Next")
+										i.bi-chevron-right(aria-hidden="true")
+
+					+txList(txHistoryTransactions, txHistoryTxCount, txHistoryLimit, txHistoryOffset, txHistoryTxInputsByTransaction, {blockHeightsByTxid:txHistoryBlockHeightsByTxid, hidePagination:true, compactCoinbaseData:true})
+
+					if (txHistoryTxCount > txHistoryLimit)
+						- var txPrevOffset = Math.max(txHistoryOffset - txHistoryLimit, 0);
+						- var txNextOffset = txHistoryOffset + txHistoryLimit;
+						.d-flex.justify-content-end.mt-3
+							ul.pagination.mb-0
+								li.page-item(class=(txHistoryOffset == 0 ? "disabled" : false))
+									a.page-link(href=(txHistoryOffset == 0 ? "javascript:void(0)" : `./?txLimit=${txHistoryLimit}&txOffset=${txPrevOffset}`), aria-label="Previous")
+										i.bi-chevron-left(aria-hidden="true")
+								li.page-item(class=(txNextOffset >= txHistoryTxCount ? "disabled" : false))
+									a.page-link(href=(txNextOffset >= txHistoryTxCount ? "javascript:void(0)" : `./?txLimit=${txHistoryLimit}&txOffset=${txNextOffset}`), aria-label="Next")
+										i.bi-chevron-right(aria-hidden="true")
+				else
+					p.mb-0 No recent transactions found.
+							
 block endOfBody
 	script.
 		var audio = new Audio('./audio/609335__kenneth_cooney__levelup.wav');

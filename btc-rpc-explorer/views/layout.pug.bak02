@@ -313,12 +313,6 @@ html(lang="en")
 								
 								
 
-		footer.footer.border-top.bg-header-footer.py-3.px-3.text-white.text-center
-			.container
-				p.mb-2 Notes: All data displayed above is based on publicly available Bitcoin information.
-				p.mb-0 Copyright © 2009-2026 Advanced Bitcoin Center
-				p.mb-0 All rights reserved.
-
 		+sharedScriptTags
 		
 		script.

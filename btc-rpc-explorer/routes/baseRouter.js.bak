@@ -66,20 +66,6 @@ router.get("/", asyncHandler(async (req, res, next) => {
 		res.locals.offset = 0;
 		res.locals.sort = "desc";
 
-		let txHistoryLimit = parseInt(req.query.txLimit || 10);
-		if (!Number.isFinite(txHistoryLimit) || txHistoryLimit <= 0) {
-			txHistoryLimit = 10;
-		}
-		txHistoryLimit = Math.min(txHistoryLimit, 50);
-
-		let txHistoryOffset = parseInt(req.query.txOffset || 0);
-		if (!Number.isFinite(txHistoryOffset) || txHistoryOffset < 0) {
-			txHistoryOffset = 0;
-		}
-
-		res.locals.txHistoryLimit = txHistoryLimit;
-		res.locals.txHistoryOffset = txHistoryOffset;
-
 		let feeConfTargets = [1, 6, 144, 1008];
 		res.locals.feeConfTargets = feeConfTargets;
 
@@ -232,73 +218,6 @@ router.get("/", asyncHandler(async (req, res, next) => {
 			res.locals.difficultyPeriodFirstBlockHeader,
 			res.locals.latestBlocks[0],
 			res.locals.difficultyAdjustmentData);
-
-		try {
-			let txHistoryRefs = [];
-			let txHistoryBlocks = res.locals.latestBlocks.slice(0, config.site.homepage.recentBlocksCount);
-
-			for (let i = 0; i < txHistoryBlocks.length; i++) {
-				let block = txHistoryBlocks[i];
-
-				if (block && block.tx) {
-					for (let j = 0; j < block.tx.length; j++) {
-						txHistoryRefs.push({
-							txid: block.tx[j],
-							blockHash: block.hash,
-							blockHeight: block.height
-						});
-					}
-				}
-			}
-
-			let visibleTxRefs = txHistoryRefs.slice(txHistoryOffset, txHistoryOffset + txHistoryLimit);
-			let txRefsByBlockHash = {};
-			let blockHeightsByTxid = {};
-
-			for (let i = 0; i < visibleTxRefs.length; i++) {
-				let txRef = visibleTxRefs[i];
-
-				if (!txRefsByBlockHash[txRef.blockHash]) {
-					txRefsByBlockHash[txRef.blockHash] = [];
-				}
-
-				txRefsByBlockHash[txRef.blockHash].push(txRef.txid);
-				blockHeightsByTxid[txRef.txid] = txRef.blockHeight;
-			}
-
-			let txsById = {};
-			let txInputsByTransaction = {};
-			let txHistoryPromises = [];
-
-			Object.keys(txRefsByBlockHash).forEach(blockHash => {
-				txHistoryPromises.push(coreApi.getRawTransactionsWithInputs(txRefsByBlockHash[blockHash], config.site.txMaxInput, blockHash).then(txData => {
-					txData.transactions.forEach(tx => {
-						if (tx) {
-							txsById[tx.txid] = tx;
-						}
-					});
-
-					Object.assign(txInputsByTransaction, txData.txInputsByTransaction);
-				}));
-			});
-
-			await utils.timePromise("homepage.getTxHistory", async () => {
-				await Promise.all(txHistoryPromises);
-			}, perfResults);
-
-			res.locals.txHistoryTransactions = visibleTxRefs.map(txRef => txsById[txRef.txid]).filter(tx => tx);
-			res.locals.txHistoryTxCount = txHistoryRefs.length;
-			res.locals.txHistoryTxInputsByTransaction = txInputsByTransaction;
-			res.locals.txHistoryBlockHeightsByTxid = blockHeightsByTxid;
-
-		} catch (err) {
-			utils.logError("3298rhweruhfew", err);
-			res.locals.txHistoryTransactions = [];
-			res.locals.txHistoryTxCount = 0;
-			res.locals.txHistoryTxInputsByTransaction = {};
-			res.locals.txHistoryBlockHeightsByTxid = {};
-			res.locals.txHistoryError = err;
-		}
 
 
 
@@ -2555,4 +2474,3 @@ router.get("/bitcoin.pdf", function(req, res, next) {
 });
 
 module.exports = router;
-

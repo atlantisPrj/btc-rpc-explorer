@@ -95,8 +95,21 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 								+successBadge
 									span(title="Coinbase transactions are special transactions created by the miner of a block. They distribute the block reward (subsidy) as the miner chooses, along with all of the fees paid by transactions included in the block.", data-bs-toggle="tooltip") coinbase
 								
-								.mt-2
-									+hexDataDisplay(txVin.coinbase)
+								if (options.compactCoinbaseData)
+									- var coinbaseText = "";
+									- var coinbaseHex = txVin.coinbase || "";
+									- for (var coinbaseHexIndex = 0; coinbaseHexIndex < coinbaseHex.length; coinbaseHexIndex += 2) {
+										- var charCode = parseInt(coinbaseHex.substring(coinbaseHexIndex, coinbaseHexIndex + 2), 16);
+										- coinbaseText += (charCode >= 32 && charCode <= 126) ? String.fromCharCode(charCode) : " ";
+									- }
+									- var coinbaseMessage = coinbaseText.split(/\s+/).filter(x => x.length >= 2).join(" ").trim();
+									if (coinbaseMessage)
+										.mt-2.small.word-wrap
+											span.text-muted.me-1 Coinbase message:
+											span.font-monospace #{coinbaseMessage}
+								else
+									.mt-2
+										+hexDataDisplay(txVin.coinbase)
 
 
 							else
@@ -357,6 +370,5 @@ mixin txIoDetails(tx, txInputs, totalIOValues, blockHeight, options={})
 							span.fw-bold
 								i.d-inline.d-lg-none.bi-arrow-right.text-success.me-2
 								+valueDisplay(totalIOValues.output)
-
 
 
